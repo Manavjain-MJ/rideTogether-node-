@@ -42,6 +42,9 @@ app.use("/notification",notificationRoutes)
 const paymentRoutes = require("./src/routes/PaymentRoutes")
 app.use("/payment",paymentRoutes)
 
+const userProfileRoutes = require("./src/controllers/UserProfileControllers")
+app.use("/profile",userProfileRoutes)
+
 mongoose.connect("mongodb://localhost:27017/25_node_intership").then(()=>{
     console.log("database connected...")
 })
