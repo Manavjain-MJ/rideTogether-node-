@@ -7,7 +7,7 @@ const userProfileSchema = mongoose.Schema({
     unique: true,
   },
   profilePicture: {
-    type: String, 
+    type: [String], 
   },
   bio: {
     type: String,

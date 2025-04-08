@@ -4,6 +4,7 @@ const bcrypt = require("bcrypt");
 const RideModel = require("../models/RideModel");
 const mailUtils = require("../utils/MailUtils");
 const jwt = require("jsonwebtoken");
+const UserProfileModel = require("../models/UserProfileModel");
 const secret = "secert";
 
 const addUser1 = async (req, res) => {
@@ -89,6 +90,11 @@ const signUp = async (req, res) => {
   const hashedPassword = bcrypt.hashSync(req.body.password, salt);
   req.body.password = hashedPassword;
   const createdUser = await RideModel.create(req.body);
+
+  await UserProfileModel.create({
+    userId: createdUser._id,
+  });
+
   await mailUtils.sendingMail(
     createdUser.email,
     "Welcome To RideTogether",
@@ -110,14 +116,16 @@ const forgetPassword = async (req, res) => {
   try {
     const email = req.body.email;
     const foundUser = await RideModel.findOne({ email: email });
-    if(!foundUser){
-      return res.status(404).json({message:"User not find please register"})
+    if (!foundUser) {
+      return res.status(404).json({ message: "User not find please register" });
     }
     // if (foundUser) {
-      const token = jwt.sign({_id:foundUser._id}, secret,{expiresIn:'10m'});
-      console.log(token);
-      const url = `http://localhost:5173/resetpassword/${token}`;
-      const mailContent = `<html>
+    const token = jwt.sign({ _id: foundUser._id }, secret, {
+      expiresIn: "10m",
+    });
+    console.log(token);
+    const url = `http://localhost:5173/resetpassword/${token}`;
+    const mailContent = `<html>
   <head>
       <style>
           .email-container {
@@ -157,37 +165,34 @@ const forgetPassword = async (req, res) => {
       </div>
   </body>
   </html>`;
-  await mailUtils.sendingMail(foundUser.email,"reset password",mailContent)
-  res.json({
-    message:"Reset password link send to mail"
-  })
-    
+    await mailUtils.sendingMail(foundUser.email, "reset password", mailContent);
+    res.json({
+      message: "Reset password link send to mail",
+    });
   } catch (error) {
     console.error(error),
-    res.status(500).json({
-      message:"User not found register first"
-    })
-    
+      res.status(500).json({
+        message: "User not found register first",
+      });
   }
 };
 
-const resetpassword = async (req,res)=>{
-  const token = req.body.token
-  const newPassword = req.body.password
+const resetpassword = async (req, res) => {
+  const token = req.body.token;
+  const newPassword = req.body.password;
 
-  const userFromToken = jwt.verify(token,secret)
+  const userFromToken = jwt.verify(token, secret);
 
-  const salt = bcrypt.genSaltSync(10)
-  const hashedPassword = bcrypt.hashSync(newPassword,salt)
+  const salt = bcrypt.genSaltSync(10);
+  const hashedPassword = bcrypt.hashSync(newPassword, salt);
 
-  const updatedUser = await RideModel.findByIdAndUpdate(userFromToken._id,{
-    password:hashedPassword,
-  })
+  const updatedUser = await RideModel.findByIdAndUpdate(userFromToken._id, {
+    password: hashedPassword,
+  });
   res.json({
-    message:"Password Updated Succesfully"
-  })
-}
-
+    message: "Password Updated Succesfully",
+  });
+};
 
 module.exports = {
   addUser,
@@ -198,5 +203,5 @@ module.exports = {
   loginUser,
   signUp,
   forgetPassword,
-  resetpassword
+  resetpassword,
 };

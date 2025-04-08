@@ -1,20 +1,22 @@
-const cloudinary = require("cloudinary").v2
+const cloudinary = require("cloudinary").v2;
 
 cloudinary.config({
-    cloud_name:"dckxpcwx2",
-    api_key:"677692646632848",
-    api_secret:"pc-F5UcWk1Tn0o7GVJ-HfPeO5b8"
-})
+  cloud_name: "dybin4ift",
+  api_key: "365442834899926",
+  api_secret: "vV_8onrdCklf0cniqcnrnlZcAX0",
+});
 const uploadFileToCloudinary = async (fileBuffer) => {
-    return new Promise((resolve, reject) => {
-        cloudinary.uploader.upload_stream({ resource_type: "auto" }, (err, result) => {
-            if (err) reject(err);
-            else resolve(result);
-        }).end(fileBuffer); // ✅ Send file buffer
-    });
+  return new Promise((resolve, reject) => {
+    cloudinary.uploader
+      .upload_stream({ resource_type: "auto" }, (err, result) => {
+        if (err) reject(err);
+        else resolve(result);
+      })
+      .end(fileBuffer); 
+  });
 };
 // const uploadFileToCloudinary = async(file)=>{
 //     const cloudinaryResponse = await cloudinary.uploader.upload(file.path)
 //     return cloudinaryResponse
 // }
-module.exports={ uploadFileToCloudinary}
+module.exports = { uploadFileToCloudinary };
