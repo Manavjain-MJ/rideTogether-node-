@@ -3,18 +3,24 @@ const path = require("path");
 const userProfileModel = require("../models/UserProfileModel");
 const cloudinaryUtil = require("../utils/CloudinaryUtils");
 
-const storage = multer.diskStorage({
-    destination: function (req, file, cb) {
-        cb(null, "./uploads"); 
-    },
-    filename: function (req, file, cb) {
-        const uniqueName = `${Date.now()}-${Math.round(
-            Math.random() * 1e9
-        )}${path.extname(file.originalname)}`;
-        cb(null, uniqueName);
-    },
-});
+// const storage = multer.diskStorage({
+//     destination: function (req, file, cb) {
+//         cb(null, "./uploads");
+//     },
+//     filename: function (req, file, cb) {
+//         const uniqueName = `${Date.now()}-${Math.round(
+//             Math.random() * 1e9
+//         )}${path.extname(file.originalname)}`;
+//         cb(null, uniqueName);
+//     },
+// });
 
+// const upload = multer({
+//   storage: storage,
+//   limits: { fileSize: 10 * 1024 * 1024 },
+// }).single("profile");
+
+const storage = multer.memoryStorage();
 const upload = multer({
   storage: storage,
   limits: { fileSize: 10 * 1024 * 1024 },
@@ -26,31 +32,51 @@ const updateUser = async (req, res) => {
       return res.status(500).json({ message: err.message });
     }
     try {
-      if (!req.file) {
-        return res.status(400).json({ message: "No images uploaded" });
+      let imageUrl = null;
+
+      if (req.file) {
+        const uploadedImage = await cloudinaryUtil.uploadFileToCloudinary(
+          req.file.buffer
+        );
+        imageUrl = uploadedImage.secure_url;
       }
 
-      const uploadedImage = await cloudinaryUtil.uploadFileToCloudinary(
-        req.file.path
-      );
+      const existingProfile = await userProfileModel.findOne({
+        userId: req.params.id,
+      });
 
-      req.body.profilePicture = uploadedImage.secure_url;
+      if (!existingProfile) {
+        return res.status(404).json({ message: "User not found", data: null });
+      }
 
-      //   console.log(req.body);
-      //   req}.body.profilePicture = profileUrls;
-      const updatedUser = await userProfileModel.findByIdAndUpdate(
-        req.params.id,
-        req.body,
-        { new: true }
-      );
-      res.status(201).json({
-        message: "User Updated Successfully",
+      // const updatedData = {
+      //   ...existingProfile.toObject(),
+      // {}  ...req.body,
+      // };
+
+      const updatedData = {};
+      if (req.body.miniBio) updatedData.miniBio = req.body.miniBio;
+
+      if (imageUrl) {
+        updatedData.profilePicture = imageUrl;
+      }
+
+      const updatedUser = await userProfileModel
+        .findOneAndUpdate(
+          { userId: req.params.id },
+          { $set: updatedData },
+          { new: true }
+        )
+        .populate("userId");
+      if (!updatedUser) {
+        return res.status(404).json({ message: "User not found", data: null });
+      }
+      res.status(200).json({
+        message: "User updated successfully",
         data: updatedUser,
       });
     } catch (err) {
-      res.status(500).json({
-        message: err.message,
-      });
+      res.status(500).json({ message: err.message });
     }
   });
 };
@@ -58,7 +84,7 @@ const updateUser = async (req, res) => {
 const getUserProfile = async (req, res) => {
   try {
     const getProfile = await userProfileModel
-      .findOne({userId:req.params.id})
+      .findOne({ userId: req.params.id })
       .populate("userId");
     res.status(200).json({
       message: "User Profile Fetched Successfully",

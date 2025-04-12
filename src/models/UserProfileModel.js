@@ -2,15 +2,16 @@ const mongoose = require("mongoose");
 const userProfileSchema = mongoose.Schema({
   userId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "ride", 
+    ref: "ride",
     required: true,
     unique: true,
   },
   profilePicture: {
-    type: [String], 
-  },
-  bio: {
     type: String,
+  },
+  miniBio: {
+    type: String,
+    default: "",
   },
   travelPreferences: {
     type: String,
