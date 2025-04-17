@@ -1,6 +1,7 @@
 const multer = require("multer");
 const path = require("path");
 const userProfileModel = require("../models/UserProfileModel");
+const userModel = require("../models/RideModel");
 const cloudinaryUtil = require("../utils/CloudinaryUtils");
 
 // const storage = multer.diskStorage({
@@ -98,7 +99,39 @@ const getUserProfile = async (req, res) => {
   }
 };
 
+const deleteUserAccount = async (req, res) => {
+  const userId = req.params.id;
+
+  try {
+    // Delete from UserProfile collection
+    const deletedProfile = await userProfileModel.findOneAndDelete({
+      userId: userId,
+    });
+
+    // Delete from User collection (auth table)
+    const deletedUser = await userModel.findByIdAndDelete(userId);
+
+    if (!deletedProfile && !deletedUser) {
+      return res.status(404).json({
+        message: "User not found or already deleted.",
+      });
+    }
+
+    return res.status(200).json({
+      message: "User account deleted successfully.",
+      profile: deletedProfile,
+      user: deletedUser,
+    });
+  } catch (err) {
+    console.error("Error deleting user:", err);
+    res.status(500).json({
+      message: "Something went wrong while deleting the account.",
+    });
+  }
+};
+
 module.exports = {
   getUserProfile,
   updateUser,
+  deleteUserAccount,
 };

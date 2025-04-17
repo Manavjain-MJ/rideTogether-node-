@@ -70,6 +70,11 @@ const liveRideSchema = mongoose.Schema(
       enum: ["in-app", "phone", "any"],
       default: "in-app",
     },
+    status: {
+      type: String,
+      enum: ["not-started", "in-progress", "completed", "cancelled"],
+      default: "not-started",
+    },
   },
   {
     timestamps: true,

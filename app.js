@@ -1,7 +1,7 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
-const app = express();
+const {app,server}=require("./src/socket/Socket")
 // const createProfilesForExistingUsers = require("./src/utils/CreateProfileForUtils");
 
 app.use(express.json());
@@ -46,12 +46,18 @@ app.use("/payment", paymentRoutes);
 const userProfileRoutes = require("./src/routes/UserProfileRoutes");
 app.use("/profile", userProfileRoutes);
 
+const messageRoutes = require("./src/routes/MessageRoutes")
+app.use("/messages",messageRoutes)
+
+const razorpayRoutes = require("./src/routes/RazorPayRoutes")
+app.use("/payments",razorpayRoutes)
+
 mongoose.connect("mongodb://localhost:27017/25_node_intership").then(() => {
   console.log("database connected...");
 //   await createProfilesForExistingUsers();
 });
 
 const PORT = 8000;
-app.listen(PORT, () => {
+server.listen(PORT, () => {
   console.log(`Server is starting at localhost:${PORT}`);
 });
