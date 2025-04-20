@@ -179,6 +179,42 @@ const deleteRideRequestByUser = async (req, res) => {
   }
 };
 
+const searchLiveRides = async (req, res) => {
+  try {
+    const { startLocation, destination, date } = req.query;
+
+    const query = {};
+
+    if (startLocation)
+      query.startLocation = { $regex: new RegExp(`^${startLocation}$`, "i") };
+    if (destination) query.destination = { $regex: new RegExp(`^${destination}$`, "i") };
+
+    if (date) {
+      // Convert DD-MM-YYYY to YYYY-MM-DD
+      const [day, month, year] = date.split("-");
+      const formattedDate = `${year}-${month}-${day}`;
+
+      const startOfDay = new Date(`${formattedDate}T00:00:00`);
+      const endOfDay = new Date(`${formattedDate}T23:59:59.999`);
+
+      query.departureTime = { $gte: startOfDay, $lte: endOfDay };
+    }
+
+    const matchingRides = await liveRideModel
+      .find(query)
+      .populate("driverId vehicleId");
+
+    res.status(200).json({
+      message: "Matching rides fetched successfully",
+      data: matchingRides,
+    });
+  } catch (err) {
+    res.status(500).json({
+      message: err.message,
+    });
+  }
+};
+
 module.exports = {
   addLiveRide,
   getAllLiveRide,
@@ -188,4 +224,5 @@ module.exports = {
   deleteRideByDriverId,
   getRideRequestsByUserId,
   deleteRideRequestByUser,
+  searchLiveRides,
 };

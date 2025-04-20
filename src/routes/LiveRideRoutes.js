@@ -9,5 +9,6 @@ routes.get("/driverrides/:driverId",liveRideControllers.getRidesByDriverId)
 routes.delete("/deletedriverride/:id",liveRideControllers.deleteRideByDriverId)
 routes.get("/riderrides/:userId",liveRideControllers.getRideRequestsByUserId)
 routes.delete("/deletedriderrequest/:id",liveRideControllers.deleteRideRequestByUser)
+routes.get("/searchrides",liveRideControllers.searchLiveRides)
 
 module.exports = routes
