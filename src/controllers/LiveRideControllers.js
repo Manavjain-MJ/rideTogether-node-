@@ -45,7 +45,7 @@ const getLiveRideById = async (req, res) => {
 
 const updateRideStatus = async (req, res) => {
   try {
-    const { id, status } = req.body;
+    const { id, status, paymentStatus } = req.body;
     if (
       !["not-started", "in-progress", "completed", "cancelled"].includes(status)
     ) {
@@ -54,11 +54,20 @@ const updateRideStatus = async (req, res) => {
           "Invalid status. Allowed statuses are: not-started, in-progress, completed, cancelled",
       });
     }
+    if (
+      paymentStatus &&
+      !["pending", "paid", "failed"].includes(paymentStatus)
+    ) {
+      return res.status(400).json({
+        message:
+          "Invalid payment status. Allowed statuses are: pending, paid, failed",
+      });
+    }
 
     const updatedRide = await liveRideModel
       .findByIdAndUpdate(
         id,
-        { status },
+        { status, paymentStatus: paymentStatus || "pending" },
         { new: true } // Return the updated document
       )
       .populate("driverId vehicleId");
@@ -187,7 +196,8 @@ const searchLiveRides = async (req, res) => {
 
     if (startLocation)
       query.startLocation = { $regex: new RegExp(`^${startLocation}$`, "i") };
-    if (destination) query.destination = { $regex: new RegExp(`^${destination}$`, "i") };
+    if (destination)
+      query.destination = { $regex: new RegExp(`^${destination}$`, "i") };
 
     if (date) {
       // Convert DD-MM-YYYY to YYYY-MM-DD

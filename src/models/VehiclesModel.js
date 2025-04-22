@@ -28,16 +28,16 @@ const vehicleSchema = mongoose.Schema(
       type: String,
       required: true,
     },
-    vehicleType: {
-      type: String,
-      enum: ["sedan", "suv", "hatchback", "electric"],
-      required: true,
-    },
-    fuelType: {
-      type: String,
-      enum: ["petrol", "diesel", "electric", "hybrid"],
-      required: true,
-    },
+    // vehicleType: {
+    //   type: String,
+    //   enum: ["sedan", "suv", "hatchback", "electric"],
+    //   // required: true,
+    // },
+    // fuelType: {
+    //   type: String,
+    //   enum: ["petrol", "diesel", "electric", "hybrid"],
+    //   // required: true,
+    // },
     airConditioning: {
       type: Boolean,
       default: false,
@@ -46,11 +46,11 @@ const vehicleSchema = mongoose.Schema(
       type: Boolean,
       default: false,
     },
-    luggageCapacity: {
-      type: String,
-      enum: ["small", "medium", "large"],
-      required: true,
-    },
+    // luggageCapacity: {
+    //   type: String,
+    //   enum: ["small", "medium", "large"],
+    //   // required: true,
+    // },
     vehicleImages: {
       type: [String],
       validate: [arrayLimit, "You can upload up to 5 images"],
