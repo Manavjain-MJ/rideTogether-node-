@@ -22,6 +22,21 @@ io.on("connection", (socket) => {
     console.log(`User Connected : userId = ${userId},SocketId=${socket.id}`);
   }
   io.emit("getOnlineUsers", Object.keys(userSocketMap));
+  socket.on("sendMessage", (msg) => {
+    const { senderId, receiverId } = msg;
+
+    // Check if the receiver is online and emit the message to them
+    const receiverSocketId = userSocketMap[receiverId];
+    if (receiverSocketId) {
+      io.to(receiverSocketId).emit("newMessage", msg);
+    }
+
+    // Optionally, send the message back to the sender (for immediate view)
+    const senderSocketId = userSocketMap[senderId];
+    if (senderSocketId) {
+      io.to(senderSocketId).emit("newMessage", msg);
+    }
+  });
   socket.on("disconnect", () => {
     if (userId) {
       delete userSocketMap[userId];
@@ -30,5 +45,20 @@ io.on("connection", (socket) => {
     io.emit("getOnlineUsers", Object.keys(userSocketMap));
   });
 });
+// socket.on("sendMessage", (msg) => {
+//   const { senderId, receiverId } = msg;
 
-module.exports = { app, server, io };
+//   // Check if receiver is online and emit the message to them
+//   const receiverSocketId = userSocketMap[receiverId];
+//   if (receiverSocketId) {
+//     io.to(receiverSocketId).emit("newMessage", msg);
+//   }
+
+//   // Optionally, also send the message back to the sender (for immediate view)
+//   const senderSocketId = userSocketMap[senderId];
+//   if (senderSocketId) {
+//     io.to(senderSocketId).emit("newMessage", msg);
+//   }
+// });
+
+module.exports = { app, server, io ,userSocketMap};
